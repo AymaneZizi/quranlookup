@@ -3,21 +3,13 @@ import Fuse from 'fuse.js'
 // Remember to rename these classes and interfaces!
 
 const EnTranslations: Record<number, string> = {
-	0: "en.ahmedali",
-	1: "en.ahmedraza",
-	2: "en.arberry",
-	3: "en.asad",
-	4: "en.daryabadi",
-	5: "en.hilali",
-	6: "en.pickthall",
-	7: "en.qaribullah",
-	8: "en.sahih",
-	9: "en.sarwar",
-	10: "en.yusufali",
-	11: "en.maududi",
-	12: "en.shakir",
-	13: "en.transliteration",
-	14: "en.itani",
+	0: "en-tafisr-ibn-kathir",
+	1:"en-tazkirul-quran",
+	2:"en-al-qushairi-tafsir",
+	3:"en-asbab-al-nuzul-by-al-wahidi",
+	4:"en-tafsir-ibn-abbas",
+	5:"en-al-jalalayn",
+	6:"en-tafsir-maarif-ul-quran",
 	15: "custom"
 };
 
@@ -119,9 +111,8 @@ export default class QuranLookupPlugin extends Plugin {
 	}
 
 	resolveAPIurl(surah:string, edition:string, startAyah:number, ayahRange = 1): string {
-		return "https://api.alquran.cloud/v1/surah/"+surah+"/" + edition + "?offset="+startAyah+"&limit="+ayahRange;
+		return "https://cdn.jsdelivr.net/gh/spa5k/tafsir_api@main/tafsir/"+ edition +"/" + surah + "/" + startAyah +".json;
 	}
-
 	async fetchArabicAndTranslation(urlArabic:string, urlEnglish:string) {
 		const [arabicResponse, englishResponse] = await Promise.all([
 			fetch(urlArabic),
