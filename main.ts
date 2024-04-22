@@ -111,7 +111,7 @@ export default class QuranLookupPlugin extends Plugin {
 	}
 
 	resolveAPIurl(surah:string, edition:string, startAyah:number, ayahRange = 1): string {
-		return "https://cdn.jsdelivr.net/gh/spa5k/tafsir_api@main/tafsir/"+ edition +"/" + surah + "/" + startAyah +".json;
+		return "https://cdn.jsdelivr.net/gh/spa5k/tafsir_api@main/tafsir/"+ edition +"/" + surah + "/" + startAyah +".json";
 	}
 	async fetchArabicAndTranslation(urlArabic:string, urlEnglish:string) {
 		const [arabicResponse, englishResponse] = await Promise.all([
