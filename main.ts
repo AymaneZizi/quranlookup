@@ -227,12 +227,25 @@ export default class QuranLookupPlugin extends Plugin {
 			: txtVal)
 	}
 
-	resolveAPIurl(surah:string, edition:string, startAyah:number, ayahRange = 1): string {
-		return "https://cdn.jsdelivr.net/gh/spa5k/tafsir_api@main/tafsir/"+ edition +"/" + surah + "/" + startAyah +".json";
+	//resolveAPIurl(surah:string, edition:string, startAyah:number, ayahRange = 1): string {
+	//	return "https://cdn.jsdelivr.net/gh/spa5k/tafsir_api@main/tafsir/"+ edition +"/" + surah + "/" + startAyah +".json";
+	//}
+	resolveAPIurl(surah: string, edition: string, startAyah: number, ayahRange = 1): string {
+	    if (ayahRange === 1) {
+	        return `https://cdn.jsdelivr.net/gh/spa5k/tafsir_api@main/tafsir/${edition}/${surah}/${startAyah}.json`;
+	    } 
+	    else {
+	        return `https://cdn.jsdelivr.net/gh/spa5k/tafsir_api@main/tafsir/${edition}/${surah}.json`;
+	    }
 	}
 
 	resolveAPIurlArabic(surah:string, edition:string, startAyah:number, ayahRange = 1): string {
-		return "https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions/"+ edition + "/" + surah + "/" + startAyah +".min.json"
+		if (ayahRange === 1) {
+			return `https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions/${edition}/${surah}/${startAyah}.min.json`;
+		}
+		else {
+	        return `https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions/${edition}/${surah}.min.json`;
+		}
 	}
 
 	async fetchArabicAndTranslation(urlArabic:string, urlEnglish:string) {
@@ -279,28 +292,37 @@ export default class QuranLookupPlugin extends Plugin {
 	        fetch(urlEnglish)
 	    ]);
 
+	    
+	    const surahNumber = parseInt(surah);
+	    const surahNameAR = allSurahs[surahNumber-1][4];
+	    const surahNameLT = allSurahs[surahNumber-1][5];
+	    const surahNameEN = allSurahs[surahNumber-1][6];
+	    
+
 	    // Extract the JSON data from the responses
 	    const arabic = await arabicResponse.json();
 	    const english = await englishResponse.json();
 
 	    // Extract Arabic and English texts for each ayah in the range
-	    const surahName = english.data.englishName;
-	    const surahNumber = parseInt(surah);
-	    const verses = arabic.data.ayahs.map((ayah: any, index: number) => {
-	        const arabicText = ayah.text;
-	        const englishTextunfiltered = this.handleParens(english.data.ayahs[index].text, this.settings.removeParens);
-	        const englishText = englishTextunfiltered.replace(/`/g, "'");
-	        return { arabicText, englishText };
-	    });
+	    const verses = ayahRange === 1
+	        ? [{ arabicText: arabic.text, englishText: this.handleParens(english.text, this.settings.removeParens) }]
+	        : english.ayahs.map((ayah: any, index: number) => {
+	            const arabicText = arabic.chapter[index].text;
+	            const englishTextunfiltered = this.handleParens(ayah.text, this.settings.removeParens);
+	            const englishText = englishTextunfiltered
+    				.replace(/`/g, "'")
+    				.replace(/- /g, "--");
+	            return { arabicText, englishText };
+	        });
 
 	    // Construct the formatted output
-	    let formattedOutput = `> [!TIP]+ ${surahName} (${surahNumber}:${ayahRangeText})\n`;
+	    let formattedOutput = `> [!TIP]+ ${surahNameAR} | ${surahNameLT} | ${surahNameEN} [${surahNumber}:${ayahRangeText}]\n`;
 	    verses.forEach((verse: any) => {
 	        formattedOutput += `> ${verse.arabicText}\n`;
 	        formattedOutput += `> ${verse.englishText}\n>\n`;
 	    });
 
-	    return formattedOutput.trim();
+    return formattedOutput.trim();
 	}
 
 	// Get a single Ayah
@@ -328,7 +350,9 @@ export default class QuranLookupPlugin extends Plugin {
 	    // Extract Arabic and English texts
 	    const arabicText = arabic.text;
 	    const englishTextunfiltered = this.handleParens(english.text, this.settings.removeParens);
-	    const englishText = englishTextunfiltered.replace(/`/g, "'");
+	   	const englishText = englishTextunfiltered
+    		.replace(/`/g, "'")
+    		.replace(/- /g, "--");
 	    const surahNameAR = allSurahs[english.surah-1][4];
 	    const surahNameLT = allSurahs[english.surah-1][5];
 	    const surahNameEN = allSurahs[english.surah-1][6];
