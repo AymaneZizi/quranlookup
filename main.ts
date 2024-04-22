@@ -10,7 +10,7 @@ const EnTranslations: Record<number, string> = {
 	4:"en-tafsir-ibn-abbas",
 	5:"en-al-jalalayn",
 	6:"en-tafsir-maarif-ul-quran",
-	15: "custom"
+	7: "custom"
 };
 
 interface QuranLookupPluginSettings {
@@ -128,7 +128,7 @@ export default class QuranLookupPlugin extends Plugin {
 		 * Helper function to get the translator name
 		 **/
 		let translator;
-		if (this.settings.translatorIndex == 15) { // 15 is the index for custom translation
+		if (this.settings.translatorIndex == 7) { // 7 is the index for custom translation
 			translator = this.settings.customTranslationIdentifier;
 		} else {
 			translator = EnTranslations[this.settings.translatorIndex];
@@ -138,79 +138,81 @@ export default class QuranLookupPlugin extends Plugin {
 
 	// TODO: Factor out redundant code in the next 2 functions
 	// Get a range of Ayaat
-	async getAyahRange(verse: string): Promise<string> {
-		// parsing surah number, ayah range, start/end ayah
-		const surah = verse.split(":")[0];
-		const ayahRangeText = verse.split(":")[1];
-		const startAyah = parseInt(ayahRangeText.split("-")[0])-1;
-		const endAyah = parseInt(ayahRangeText.split("-")[1]);
-		const ayahRange = endAyah - startAyah;
+	// Get a range of Ayaat
+async getAyahRange(verse: string): Promise<string> {
+    // Parsing surah number, ayah range, start/end ayah
+    const surah = verse.split(":")[0];
+    const ayahRangeText = verse.split(":")[1];
+    const startAyah = parseInt(ayahRangeText.split("-")[0]);
+    const endAyah = parseInt(ayahRangeText.split("-")[1]);
+    const ayahRange = endAyah - startAyah + 1;
 
-		// prepare fetch URLs
-		const translator = this.getTranslator();
-		const urlEnglis = this.resolveAPIurl(surah, translator, startAyah, ayahRange);
-		const urlArabic = this.resolveAPIurl(surah, "ar.quran-simple", startAyah, ayahRange);
+    // Prepare fetch URLs
+    const translator = this.getTranslator();
+    const urlEnglish = this.resolveAPIurl(surah, EnTranslations[translator], startAyah, ayahRange);
+    const urlArabic = this.resolveAPIurl(surah, "ar.quran-simple", startAyah, ayahRange);
 
-		// Fetch the content from the API
-		const totalText = this.fetchArabicAndTranslation(urlArabic, urlEnglis).then(([arabic, englis]) => {
-			// Extract values from the API responses
-			const arKeys = arabic.data.ayahs.map((val: any): ArKeys => ({ verseNum: +val.numberInSurah, arText: val.text }));
-			const enKeys = englis.data.ayahs.map((val: any): EnKeys => ({ verseNum: +val.numberInSurah, enText: this.handleParens(val.text, this.settings.removeParens)}));
-			const surahName = englis.data.englishName;
-			const surahNumber = englis.data.number;
+    // Fetch the content from the API
+    const [arabicResponse, englishResponse] = await Promise.all([
+        fetch(urlArabic),
+        fetch(urlEnglish)
+    ]);
 
-			// Combine arabic & translations into an array of single object {verse_number, arabic, english}
-			const groupings = arKeys.map((itm: ArKeys) => ({
-				...enKeys.find((item: EnKeys) => (item.verseNum === itm.verseNum) && item),
-				...itm
-			}));
+    // Extract the JSON data from the responses
+    const arabic = await arabicResponse.json();
+    const english = await englishResponse.json();
 
-			// Format for Obsidian call-out markup display '>'
-			const surahAndAyah = "> [!TIP]+ " + surahName + " (" + surahNumber + ":"+ ayahRangeText + ")" 
-			let strAdder = surahAndAyah + '\n'
-			
-			// iterate verse by verse arabic then english
-			for (const g of groupings) {
-				strAdder += "> " + g.arText + '\n' + "> " + (g.enText as string) + "\n>\n";
-			}
-			return strAdder.slice(0, -2); // remove extra '>\n' at the end
-		}).catch(error => {
-			// TODO: Display a notification of error
-			return "";
-		});
+    // Extract Arabic and English texts for each ayah in the range
+    const surahName = english.data.englishName;
+    const surahNumber = parseInt(surah);
+    const verses = arabic.data.ayahs.map((ayah: any, index: number) => {
+        const arabicText = ayah.text;
+        const englishText = this.handleParens(english.data.ayahs[index].text, this.settings.removeParens);
+        return { arabicText, englishText };
+    });
 
-		return totalText;
+    // Construct the formatted output
+    let formattedOutput = `> [!TIP]+ ${surahName} (${surahNumber}:${ayahRangeText})\n`;
+    verses.forEach((verse: any) => {
+        formattedOutput += `> ${verse.arabicText}\n`;
+        formattedOutput += `> ${verse.englishText}\n>\n`;
+    });
+
+    return formattedOutput.trim();
+}
+
+// Get a single Ayah
+async getAyah(verse: string): Promise<string> {
+    // Parsing out surah and ayah
+    const surah = verse.split(":")[0];
+    const ayahNumber = parseInt(verse.split(":")[1]);
+
+    // Prepare fetch URLs
+    const translator = this.getTranslator();
+    const urlEnglish = this.resolveAPIurl(surah, EnTranslations[translator], ayahNumber);
+    const urlArabic = this.resolveAPIurl(surah, "ar.quran-simple", ayahNumber);
+
+    // Fetch the content from the API
+    const [arabicResponse, englishResponse] = await Promise.all([
+        fetch(urlArabic),
+        fetch(urlEnglish)
+    ]);
+
+    // Extract the JSON data from the responses
+    const arabic = await arabicResponse.json();
+    const english = await englishResponse.json();
+
+    // Extract Arabic and English texts
+    const arabicText = arabic.data.ayahs[0].text;
+    const englishText = this.handleParens(english.data.ayahs[0].text, this.settings.removeParens);
+    const surahName = english.data.englishName;
+    const surahNumber = parseInt(surah);
+
+    // Construct the formatted output
+    const formattedOutput = `> [!TIP]+ ${surahName} (${surahNumber}:${ayahNumber})\n> ${arabicText}\n> ${englishText}`;
+    return formattedOutput.trim();
 	}
-	// Get a single Ayah
-	async getAyah(verse: string): Promise<string> {
-		// parsing out surah and ayah
-		const surah = verse.split(":")[0];
-		const ayah = parseInt(verse.split(":")[1])-1;
 
-		// prepare fetch URLs
-		const translator = this.getTranslator();
-		const urlEnglis = this.resolveAPIurl(surah, translator, ayah);
-		const urlArabic = this.resolveAPIurl(surah, "ar.quran-simple", ayah);
-
-		// Fetch the content from the API
-		const totalText = this.fetchArabicAndTranslation(urlArabic, urlEnglis).then(([arabic, englis]) => {
-			// Extract values from the API responses
-			const arText = arabic.data.ayahs[0].text;
-			const enText = this.handleParens(englis.data.ayahs[0].text, this.settings.removeParens);
-			const surahName = englis.data.englishName;
-			const surahNumber = englis.data.number;
-			const ayahNumber = englis.data.ayahs[0].numberInSurah;
-
-			// Format and return for Obsidian call-out markeup display '>'
-			const surahAndAyah = "> [!TIP]+ " + surahName + " (" + surahNumber + ":"+ ayahNumber + ")"; 
-			return surahAndAyah + '\n' + '>' + arText + '\n' + '>' + enText;
-		}).catch(error => {
-			// TODO: Display a notification of error
-			return "";
-		});
-
-		return totalText;
-	}
 }
 class QuranLookupSettingTab extends PluginSettingTab {
 	plugin: QuranLookupPlugin;
@@ -240,7 +242,7 @@ class QuranLookupSettingTab extends PluginSettingTab {
 			});
 
 		// if custom translation is selected, add a text box to enter the url
-		if (this.plugin.settings.translatorIndex == 15) {
+		if (this.plugin.settings.translatorIndex == 7) {
 			new Setting(containerEl)
 				.setName('Custom Translation')
 				.setDesc('Enter the Edition eg: dv.divehi ')
