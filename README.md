@@ -1,5 +1,5 @@
 ## بِسْمِ ٱللّٰهِ ٱلرَّحْمٰنِ ٱلرَّحِيْم
-# Obsidian Quran Lookup Plugin
+# Obsidian Quran Inspect Plugin
 [![CodeQL](https://github.com/abuibrahim2/quranlookup/actions/workflows/codeql.yml/badge.svg)](https://github.com/abuibrahim2/quranlookup/actions/workflows/codeql.yml)
 
 
@@ -42,24 +42,15 @@ This plugin has some small customizations: in `Community Plugins > Installed Plu
 
 ### Translation Types
 - You can choose from a variety of english translation types based on the [API language selections](http://api.alquran.cloud/v1/edition/language/en):
-
   | Option | Translator |
   | ------------| ---------|
-  | en.ahmedali | Ahmed Ali|
-  | en.ahmedraza | Ahmed Raza Khan|
-  | en.arberry | A. J. Arberry|
-  | en.asad | Muhammad Asad|
-  | en.daryabadi | Abdul Majid Daryabadi|
-  | en.hilali | Muhammad Taqi-ud-Din al-Hilali and Muhammad Muhsin Khan|
-  | en.pickthall | Mohammed Marmaduke William Pickthall|
-  | en.qaribullah | Hasan al-Fatih Qaribullah and Ahmad Darwish|
-  | en.sahih | Saheeh International|
-  | en.sarwar | Muhammad Sarwar|
-  | en.yusufali | Abdullah Yusuf Ali|
-  | en.maududi | Abul Ala Maududi|
-  | en.shakir | Mohammad Habib Shakir|
-  | en.transliteration | English Transliteration|
-  | en.itani | Clear Qur'an by Talal Itani |
+  | en-tafisr-ibn-kathir | ibn kathir|
+  | en-tazkirul-quran | Wahiduddin Khan|
+  | en-al-qushairi-tafsir | Abu l-Qasim al-Qushayri|
+  | en-asbab-al-nuzul-by-al-wahidi | Al Wahidi|
+  | en-tafsir-ibn-abbas | Ibn Abbas|
+  | en-al-jalalayn | Jalal al-Din al-Mahalli|
+  | en-tafsir-maarif-ul-quran | Muhammad Shafi|
 
 ### Remove Parenthesis Contents
 #### ${🛑\ {\color{red}Experimental}}\ 🛑\$
@@ -70,9 +61,9 @@ This plugin has some small customizations: in `Community Plugins > Installed Plu
 
 - NOTE: This is experimental and while I have tried to test it, it may not work 100% all the time so extra eyes QA'ing it are appreciated!
 ## Attributions
-### The Quran API and Source(s)
+### The Tafsir_api and Source(s)
 The Quran verses are retrieved from
-- [alquran.cloud](https://alquran.cloud/api) : An opensource Quran API made by the [Islamic Network](https://islamic.network/) ([github](https://github.com/islamic-network)) and respective [contributors](https://alquran.cloud/contributors).
+- [tafsir_api]((https://cdn.jsdelivr.net/gh/spa5k/tafsir_api@{apiVersion}/{endpoint})) : An opensource Quran API ([github]((https://github.com/spa5k/tafsir_api)).
 ### Fuzzy Search
 The Fuzzy search feature is made possible using
 - [Fuze.js](https://fusejs.io/) : A powerful lightweight fuzzy-search library, with zero dependencies ([github](https://github.com/krisk/Fuse))
@@ -86,29 +77,17 @@ The lookup uses api.alquran.cloud API to lookup the verses by surah and verse nu
 For the fuzzy name search, it uses a simple index file surahSlim.json and fuse.js to find the closest sura name and retrieve it's index number.
 
 ## Future Feature Ideas (logged in [project Issues](https://github.com/abuibrahim2/quranlookup/issues))
-- [ ] Add error notification for 'surah not found' or 'ayah index out of range' (currently doesn't do anything if invalid string is attempted to be upon)
-- [ ] Show the translator name in the settings
-- [ ] Toggle Display of verses callout sections: e.g. show Arabic Only, Translation Only
-- [ ] Right-To-Left alignment for Arabic text
-- [ ] Support display of alternate arabic fonts
-- [ ] Add support for translations in other languages 
-- [ ] Allow for customization of the Call-out style in the settings (e.g. abstract, info, note, success, question, warning, failure, danger, bug, example, quote, custom, none)
-- [ ] Give option to show dialog with preview and style options each time (like the Admonition plugins 'Insert Admonition' dialog)
-- [ ] Add option to toggle to use 'Admonition' style syntax instead of obsidian call-out style
-- [ ] Provide external links to ayah in websites like quran.com
-- [ ] Add "Offline Mode" option which downlaods and retrieves verses and translations from the locally saved vault rather than calling API
-- [ ] Add command to search for an ayah using search API (displaying results in a dialog)
-- [ ] Add audio playback capabilities to playback the verse
-- Other ideas?... feel free [to suggest](https://github.com/abuibrahim2/quranlookup/issues)!
-## Manually installing the plugin
-
+- [ ] range of Ayahs
+- Other ideas?... feel free [to suggest](https://github.com/aymanezizi/quranlookup/issues)!
+## Manually installing the plugig
+- `npm install` , `npm run build`
 - Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/quranlookup/`.
 - Reload Obsidian to load the new version of your plugin.
 - Enable plugin in settings window.
 
 ## How to Contribute
 I'm one person who just quickly put this together because I wanted this capability in my notes. This is still in need of much refactoring and improvement.
-- [For Issues or Feature Requests](https://github.com/abuibrahim2/quranlookup/issues)
+- [For Issues or Feature Requests](https://github.com/aymanezizi/quranlookup/issues)
 - [For making Contributions](./CONTRIBUTING.md)
 
 ## Similar Projects
